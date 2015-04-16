@@ -11,4 +11,13 @@
 
 @synthesize title, identifier, previewURL = _previewURL, thumbnail;
 
+- (void)dealloc {
+	[title release];
+	[identifier release];
+	[_previewURL release];
+	[thumbnail release];
+	
+	[super dealloc];
+}
+
 @end

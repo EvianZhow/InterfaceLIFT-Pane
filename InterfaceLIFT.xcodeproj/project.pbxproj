@@ -323,8 +323,6 @@
 		C926432B14B8B81F00EF9D57 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_ENABLE_OBJC_ARC = YES;
-				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = InterfaceLIFT/Prefix.pch;
 				INFOPLIST_FILE = InterfaceLIFT/Resources/Info.plist;
@@ -337,8 +335,6 @@
 		C926432C14B8B81F00EF9D57 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_ENABLE_OBJC_ARC = YES;
-				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = InterfaceLIFT/Prefix.pch;
 				INFOPLIST_FILE = InterfaceLIFT/Resources/Info.plist;

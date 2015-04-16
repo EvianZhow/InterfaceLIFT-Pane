@@ -36,6 +36,15 @@
 	return self;
 }
 
+- (void)dealloc {
+	[_indicator release];
+	[_imageView release];
+	[_badgeView release];
+	[_overlayView release];
+	
+	[super dealloc];
+}
+
 - (NSProgressIndicator *)indicator {
 	if (!_indicator) {
 		_indicator = [[NSProgressIndicator alloc] initWithFrame:NSZeroRect];
