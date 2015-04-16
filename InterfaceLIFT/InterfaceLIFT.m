@@ -13,6 +13,8 @@
 #define HASH @"b3JvYXR6YjExcWhieTh4ZWxkcm00aGh3eTluaXBsOjIzMTcyMTExNTU4ZmViNDQ0NTFjZjRhYTMzN2ZiOTQwMDBkY2I3MWQ="
 #define HEADER @"X-Mashape-Authorization"
 
+static NSString *const kAPIKey = @"jcAdhn6vlvxiqecaNMo79UsESPicPFFcgNLmmKMJL1GXNkVcLS";
+
 @implementation InterfaceLIFT {
 	NSString *_latestID;
 	NSOperationQueue *_workQueue;
@@ -174,12 +176,16 @@
 
 - (void)loadNextPageOfWallpapers {
 	// Setup the url and key
-	NSString *urlbase = @"https://interfacelift-interfacelift-wallpapers.p.mashape.com/v1/wallpapers/";
+	
+	NSString *urlBase = @"https://api.ifl.cc/v1/wallpapers/";
 	
 	// Parameters to use to make the API request
 	NSMutableDictionary *params = [NSMutableDictionary dictionary];
-	[params setObject:@"21" forKey:@"limit"];
+	[params setObject:@"20" forKey:@"limit"];
 	[params setObject:[NSString stringWithFormat:@"%ld", _currentOffset] forKey:@"start"];
+	params[@"sort_by"] = @"date";
+	params[@"sort_order"] = @"desc";
+	params[@"tag_id"] = @"614";
 	
 	// Build resolution string and set resolution param
 	NSRect screenRect = [[NSScreen mainScreen] frame];
@@ -194,10 +200,10 @@
 	}
 	
 	// build the URL object and make the request
-	NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@", urlbase, paramString]];
+	NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@", urlBase, paramString]];
 	
 	NSMutableURLRequest *r = [NSMutableURLRequest requestWithURL:url];
-	[r setValue:HASH forHTTPHeaderField:HEADER];
+	[r setValue:kAPIKey forKey:@"X-IFL-API-Key"];
 	[r setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
 	
 	[NSURLConnection sendAsynchronousRequest:r queue:_workQueue
