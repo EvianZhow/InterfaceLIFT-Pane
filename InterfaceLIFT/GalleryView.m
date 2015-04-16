@@ -34,13 +34,6 @@
 	return self;
 }
 
-- (void)dealloc {
-	[_footerView release];
-	[_cells release];
-	
-	[super dealloc];
-}
-
 - (BOOL)isFlipped {
 	return YES;
 }
@@ -55,7 +48,6 @@
 		imageCell.toolTip = [self.delegate galleryView:self titleForImageAtIndex:idx];
 		
 		[_cells addObject:imageCell];
-		[imageCell release];
 		
 		[self addSubview:imageCell];
 		
