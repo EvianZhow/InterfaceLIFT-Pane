@@ -10,7 +10,7 @@
 @interface ImageCell : NSView
 
 @property (nonatomic, strong) NSImage *image;
-@property (nonatomic, assign) BOOL isNew;
+@property (nonatomic) BOOL isNew;
 
 @property (nonatomic, weak) GalleryView *galleryView;
 

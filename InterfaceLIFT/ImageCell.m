@@ -26,12 +26,10 @@
 
 #define BADGE_SIDE 20.0f
 
-@synthesize isNew = _isNew, galleryView = _galleryView;
-
-- (id)initWithFrame:(NSRect)frameRect {
+- (instancetype)initWithFrame:(NSRect)frameRect {
 	self = [super initWithFrame:frameRect];
 	if (self) {
-		[self addSubview:[self indicator]];
+		[self addSubview:self.indicator];
 	}
 	return self;
 }
@@ -51,8 +49,8 @@
 
 - (OverlayView *)overlayView {
 	if (!_overlayView) {
-		_overlayView = [[OverlayView alloc] initWithFrame:[self bounds]];
-		_overlayView.alphaValue = 0.0f;
+		_overlayView = [[OverlayView alloc] initWithFrame:self.bounds];
+		_overlayView.alphaValue = 0;
 	}
 	
 	return _overlayView;
@@ -63,11 +61,11 @@
 }
 
 - (void)layoutSubviews {
-	CGFloat w = NSWidth([_indicator bounds]);
-	CGFloat h = NSHeight([_indicator bounds]);
+	CGFloat w = NSWidth(_indicator.bounds);
+	CGFloat h = NSHeight(_indicator.bounds);
 	
-	CGFloat x = (int) NSMidX([self bounds]);
-	CGFloat y = (int) NSMidY([self bounds]);
+	CGFloat x = (int) NSMidX(self.bounds);
+	CGFloat y = (int) NSMidY(self.bounds);
 	
 	_indicator.frame = NSMakeRect(x-w/2, y-w/2, w, h);
 }
@@ -83,7 +81,7 @@
 	if (!_imageView) {
 		[_indicator removeFromSuperview];
 		
-		_imageView = [[NSImageView alloc] initWithFrame:[self bounds]];
+		_imageView = [[NSImageView alloc] initWithFrame:self.bounds];
 		_imageView.imageScaling = NSImageScaleProportionallyUpOrDown;
 		
 		[self addSubview:_imageView];
@@ -93,7 +91,7 @@
 	
 	if (_isNew) {
 		if (!_badgeView) {
-			_badgeView = [[NSImageView alloc] initWithFrame:NSMakeRect(NSWidth([self bounds])-BADGE_SIDE, NSHeight([self bounds])-BADGE_SIDE, BADGE_SIDE, BADGE_SIDE)];
+			_badgeView = [[NSImageView alloc] initWithFrame:NSMakeRect(NSWidth(self.bounds)-BADGE_SIDE, NSHeight(self.bounds)-BADGE_SIDE, BADGE_SIDE, BADGE_SIDE)];
 			_badgeView.image = [[NSBundle bundleWithIdentifier:@"com.MattRajca.InterfaceLIFT"] imageForResource:@"Badge"];
 			
 			[self addSubview:_badgeView];
@@ -113,17 +111,17 @@
 }
 
 - (void)showOverlay {
-	[self addSubview:[self overlayView]];
+	[self addSubview:self.overlayView];
 	[self addSubview:_indicator positioned:NSWindowAbove relativeTo:_overlayView];
 	
-	[[_overlayView animator] setAlphaValue:0.8f];
+	_overlayView.animator.alphaValue = 0.8;
 }
 
 - (void)hideOverlay {
 	[_indicator removeFromSuperview];
 	
 	[NSAnimationContext runAnimationGroup:^(NSAnimationContext *context) {
-		[[_overlayView animator] setAlphaValue:0.0f];
+		_overlayView.animator.alphaValue = 0;
 	} completionHandler:^{
 		[_overlayView removeFromSuperview];
 	}];
