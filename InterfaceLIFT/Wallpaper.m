@@ -9,6 +9,4 @@
 
 @implementation Wallpaper
 
-@synthesize title, identifier, previewURL = _previewURL, thumbnail;
-
 @end
