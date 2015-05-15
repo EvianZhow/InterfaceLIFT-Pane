@@ -33,8 +33,6 @@ static NSString *ParamStringWithDictionary(NSDictionary *dictionary) {
 	NSButton *_nextPageButton;
 }
 
-@synthesize galleryView = _galleryView;
-
 - (instancetype)initWithBundle:(NSBundle *)bundle {
 	self = [super initWithBundle:bundle];
 	if (self) {
