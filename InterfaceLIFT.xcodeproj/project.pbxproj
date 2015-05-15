@@ -57,7 +57,7 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		C993F8FD1AE050CA007A0241 /* InterfaceLIFT */ = {
+		C95F78791B05958C0074FA55 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
 				C993F8FE1AE050CA007A0241 /* GalleryView.h */,
@@ -68,10 +68,18 @@
 				C993F9031AE050CA007A0241 /* InterfaceLIFT.m */,
 				C993F9041AE050CA007A0241 /* OverlayView.h */,
 				C993F9051AE050CA007A0241 /* OverlayView.m */,
-				C993F9061AE050CA007A0241 /* Prefix.pch */,
-				C993F9071AE050CA007A0241 /* Resources */,
 				C993F90E1AE050CA007A0241 /* Wallpaper.h */,
 				C993F90F1AE050CA007A0241 /* Wallpaper.m */,
+			);
+			name = Sources;
+			sourceTree = "<group>";
+		};
+		C993F8FD1AE050CA007A0241 /* InterfaceLIFT */ = {
+			isa = PBXGroup;
+			children = (
+				C95F78791B05958C0074FA55 /* Sources */,
+				C993F9061AE050CA007A0241 /* Prefix.pch */,
+				C993F9071AE050CA007A0241 /* Resources */,
 			);
 			path = InterfaceLIFT;
 			sourceTree = "<group>";
