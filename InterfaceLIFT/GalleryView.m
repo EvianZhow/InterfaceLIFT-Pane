@@ -20,13 +20,10 @@
 	NSMutableArray *_cells;
 }
 
-@synthesize footerView = _footerView, delegate = _delegate;
-
-- (id)initWithFrame:(NSRect)frameRect {
+- (instancetype)initWithFrame:(NSRect)frameRect {
 	self = [super initWithFrame:frameRect];
 	if (self) {
-		[self setWantsLayer:YES];
-		
+		self.wantsLayer = YES;
 		self.layer.backgroundColor = CGColorGetConstantColor(kCGColorWhite);
 		
 		_cells = [NSMutableArray new];
@@ -41,7 +38,7 @@
 - (void)insertImagesAtIndices:(NSIndexSet *)indices {
 	[indices enumerateIndexesUsingBlock:^(NSUInteger idx, BOOL *stop) {
 		
-		ImageCell *imageCell = [[ImageCell alloc] initWithFrame:NSMakeRect(0.0f, 0.0f, BOX_W, BOX_H)];
+		ImageCell *imageCell = [[ImageCell alloc] initWithFrame:NSMakeRect(0, 0, BOX_W, BOX_H)];
 		imageCell.galleryView = self;
 		imageCell.image = [self.delegate galleryView:self imageAtIndex:idx];
 		imageCell.isNew = [self.delegate galleryView:self isImageNewAtIndex:idx];
@@ -53,7 +50,7 @@
 		
 	}];
 	
-	if (self.footerView && ![self.footerView superview]) {
+	if (self.footerView && !self.footerView.superview) {
 		[self addSubview:self.footerView];
 	}
 	
@@ -75,13 +72,13 @@
 }
 
 - (NSUInteger)numberOfRows {
-	NSUInteger images = [self.delegate numberOfImagesInGalleryView:self];
+	const NSUInteger images = [self.delegate numberOfImagesInGalleryView:self];
 	
-	return ceilf(images / (CGFloat) COLS);
+	return ceilf(images / (CGFloat)COLS);
 }
 
 - (void)layoutCells {
-	CGFloat rowHeight = [self numberOfRows] * MBH;
+	const CGFloat rowHeight = self.numberOfRows * MBH;
 	CGFloat galleryHeight = rowHeight;
 	
 	if (self.footerView) {
@@ -89,22 +86,21 @@
 		galleryHeight += MARGIN_V * 2;
 	}
 	
-	[self setFrameSize:NSMakeSize(NSWidth([self frame]), galleryHeight)];
+	[self setFrameSize:NSMakeSize(NSWidth(self.frame), galleryHeight)];
 	
 	NSUInteger n = 0;
 	
 	for (ImageCell *cell in _cells) {
-		NSUInteger row = n / COLS;
-		NSUInteger col = n % COLS;
+		const NSUInteger row = n / COLS;
+		const NSUInteger col = n % COLS;
 		
 		cell.frame = NSMakeRect(MARGIN_H + col * MBW, MARGIN_V + row * MBH, BOX_W, BOX_H);
 		
 		n++;
 	}
 	
-	CGFloat x = ceilf((NSWidth([self bounds]) - NSWidth([self.footerView bounds])) / 2);
-	
-	[self.footerView setFrameOrigin:NSMakePoint(x, rowHeight + MARGIN_V)];
+	const CGFloat x = ceilf((NSWidth(self.bounds) - NSWidth(self.footerView.bounds)) / 2);
+	self.footerView.frameOrigin = NSMakePoint(x, rowHeight + MARGIN_V);
 }
 
 @end
