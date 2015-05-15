@@ -25,7 +25,7 @@
 	<key>NSMainNibFile</key>
 	<string>InterfaceLIFT</string>
 	<key>NSPrefPaneIconFile</key>
-	<string>InterfaceLIFT.tiff</string>
+	<string>Icon.png</string>
 	<key>NSPrefPaneIconLabel</key>
 	<string>InterfaceLIFT</string>
 	<key>NSPrincipalClass</key>
