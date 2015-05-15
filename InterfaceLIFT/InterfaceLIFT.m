@@ -45,17 +45,6 @@ static NSString *const kAPIKey = @"jcAdhn6vlvxiqecaNMo79UsESPicPFFcgNLmmKMJL1GXN
 	return self;
 }
 
-- (void)dealloc {
-	[_latestID release];
-	[_workQueue release];
-	[_wallpaperQueue release];
-	[_thumbQueue release];
-	[_wallpapers release];
-	[_nextPageButton release];
-	
-	[super dealloc];
-}
-
 - (void)awakeFromNib {
 	self.galleryView.footerView = [self nextPageButton];
 }
@@ -255,7 +244,6 @@ static NSString *const kAPIKey = @"jcAdhn6vlvxiqecaNMo79UsESPicPFFcgNLmmKMJL1GXN
 		wallpaper.title = [item objectForKey:@"title"];
 		
 		[_wallpapers addObject:wallpaper];
-		[wallpaper release];
 		
 		[_thumbQueue addOperationWithBlock:^{
 			NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:wallpaper.previewURL];
@@ -272,7 +260,7 @@ static NSString *const kAPIKey = @"jcAdhn6vlvxiqecaNMo79UsESPicPFFcgNLmmKMJL1GXN
 				return;
 			}
 			
-			NSImage *image = [[[NSImage alloc] initWithData:imageData] autorelease];
+			NSImage *image = [[NSImage alloc] initWithData:imageData];
 			
 			[[NSOperationQueue mainQueue] addOperationWithBlock:^{
 				
