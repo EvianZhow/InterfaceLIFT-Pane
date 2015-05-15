@@ -11,6 +11,4 @@
 
 @property (nonatomic, weak) IBOutlet GalleryView *galleryView;
 
-- (void)loadNextPageOfWallpapers;
-
 @end

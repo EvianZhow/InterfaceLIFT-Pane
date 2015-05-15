@@ -12,6 +12,7 @@
 static NSString *const kAPIKey = @"jcAdhn6vlvxiqecaNMo79UsESPicPFFcgNLmmKMJL1GXNkVcLS";
 static NSString *const kURLBase = @"https://api.ifl.cc/v1";
 static NSString *const kLimit = @"21";
+static NSString *const kLatestIDKey = @"MRIL.LatestID";
 
 static NSString *ParamStringWithDictionary(NSDictionary *dictionary) {
 	NSMutableString *paramString = [NSMutableString stringWithString:@"?"];
@@ -25,8 +26,6 @@ static NSString *ParamStringWithDictionary(NSDictionary *dictionary) {
 
 @implementation InterfaceLIFT {
 	NSString *_latestID;
-	NSOperationQueue *_workQueue;
-	NSOperationQueue *_wallpaperQueue;
 	NSOperationQueue *_thumbQueue;
 	NSMutableArray *_wallpapers;
 	NSUInteger _currentOffset;
@@ -41,57 +40,46 @@ static NSString *ParamStringWithDictionary(NSDictionary *dictionary) {
 	if (self) {
 		_wallpapers = [NSMutableArray new];
 		
-		_workQueue = [[NSOperationQueue alloc] init];
-		[_workQueue setMaxConcurrentOperationCount:1];
-		
-		_wallpaperQueue = [[NSOperationQueue alloc] init];
-		[_wallpaperQueue setMaxConcurrentOperationCount:1];
-		
 		_thumbQueue = [[NSOperationQueue alloc] init];
-		[_thumbQueue setMaxConcurrentOperationCount:1];
+		_thumbQueue.maxConcurrentOperationCount = 1;
 	}
 	return self;
 }
 
 - (void)awakeFromNib {
-	self.galleryView.footerView = [self nextPageButton];
+	self.galleryView.footerView = self.nextPageButton;
 }
 
 - (NSButton *)nextPageButton {
 	if (!_nextPageButton) {
-		_nextPageButton = [[NSButton alloc] initWithFrame:NSMakeRect(0.0f, 0.0f, 182.0f, 32.0f)];
-		[_nextPageButton setBezelStyle:NSSmallSquareBezelStyle];
-		[_nextPageButton setTitle:@"Load Next Page"];
-		[_nextPageButton setTarget:self];
-		[_nextPageButton setAction:@selector(loadNextPageOfWallpapers)];
+		_nextPageButton = [[NSButton alloc] initWithFrame:NSMakeRect(0, 0, 182, 32)];
+		_nextPageButton.bezelStyle = NSSmallSquareBezelStyle;
+		_nextPageButton.title = @"Load Next Page";
+		_nextPageButton.target = self;
+		_nextPageButton.action = @selector(loadNextPageOfWallpapers);
 	}
 	
 	return _nextPageButton;
 }
 
 - (NSUInteger)numberOfImagesInGalleryView:(GalleryView *)view {
-	return [_wallpapers count];
+	return _wallpapers.count;
 }
 
 - (NSImage *)galleryView:(GalleryView *)view imageAtIndex:(NSUInteger)index {
-	return [[_wallpapers objectAtIndex:index] thumbnail];
+	return [_wallpapers[index] thumbnail];
 }
 
 - (void)galleryView:(GalleryView *)view didSelectCellAtIndex:(NSUInteger)index {
 	[[_galleryView imageCellAtIndex:index] showOverlay];
-	
-	Wallpaper *wallpaper = [_wallpapers objectAtIndex:index];
-	[self loadWallpaper:wallpaper];
+	[self loadWallpaper:_wallpapers[index]];
 }
 
 - (void)loadWallpaper:(Wallpaper *)wallpaper {
-	// Setup the url and key
-	// Build resolution string and set resolution param
-	NSRect screenRect = [[NSScreen mainScreen] frame];
-	NSString *resString = [NSString stringWithFormat:@"%dx%d", (int) screenRect.size.width, (int) screenRect.size.height];
+	NSRect screenRect = [NSScreen mainScreen].frame;
+	NSString *resString = [NSString stringWithFormat:@"%dx%d", (int)screenRect.size.width, (int)screenRect.size.height];
 	NSString *totalUrl = [NSString stringWithFormat:@"%@/wallpaper_download/%@/%@/", kURLBase, wallpaper.identifier, resString];
 	
-	// build the URL object and make the request
 	NSMutableURLRequest *r = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:totalUrl]];
 	[r setValue:kAPIKey forHTTPHeaderField:@"X-IFL-API-Key"];
 	[r setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
@@ -111,14 +99,16 @@ static NSString *ParamStringWithDictionary(NSDictionary *dictionary) {
 
 - (void)parseWallpaperDownload:(NSData *)data wallpaper:(Wallpaper *)wallpaper {
 	NSError *error = nil;
-	NSDictionary *wallpaperDownload = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+	NSDictionary *wallpaperDownload = [NSJSONSerialization JSONObjectWithData:data
+																	  options:0
+																		error:&error];
 	
 	if (!wallpaperDownload) {
 		NSLog(@"Could not parse wallpaper download. Error: %@", error);
 		return;
 	}
 	
-	NSURL *url = [NSURL URLWithString:[wallpaperDownload objectForKey:@"download_url"]];
+	NSURL *url = [NSURL URLWithString:wallpaperDownload[@"download_url"]];
 	
 	NSMutableURLRequest *r = [NSMutableURLRequest requestWithURL:url];
 	[r setValue:kAPIKey forHTTPHeaderField:@"X-IFL-API-Key"];
@@ -150,28 +140,26 @@ static NSString *ParamStringWithDictionary(NSDictionary *dictionary) {
 								   }
 							   }
 							   
-							   NSUInteger index = [_wallpapers indexOfObject:wallpaper];
+							   const NSUInteger index = [_wallpapers indexOfObject:wallpaper];
 							   [[_galleryView imageCellAtIndex:index] hideOverlay];
 							   
 						   }];
 }
 
 - (BOOL)galleryView:(GalleryView *)view isImageNewAtIndex:(NSUInteger)index {
-	Wallpaper *wallpaper = [_wallpapers objectAtIndex:index];
-	
+	Wallpaper *wallpaper = _wallpapers[index];
 	return [_latestID compare:wallpaper.identifier options:NSNumericSearch] == NSOrderedAscending;
 }
 
 - (NSString *)galleryView:(GalleryView *)view titleForImageAtIndex:(NSUInteger)index {
-	Wallpaper *wallpaper = [_wallpapers objectAtIndex:index];
-	
+	Wallpaper *wallpaper = _wallpapers[index];
 	return wallpaper.title;
 }
 
 - (void)mainViewDidLoad {
 	[super mainViewDidLoad];
 	
-	_latestID = [[[NSUserDefaults standardUserDefaults] stringForKey:@"MRIL.LatestID"] copy];
+	_latestID = [[[NSUserDefaults standardUserDefaults] stringForKey:kLatestIDKey] copy];
 	
 	[self loadNextPageOfWallpapers];
 }
@@ -212,7 +200,7 @@ static NSString *ParamStringWithDictionary(NSDictionary *dictionary) {
 
 - (void)parseWallpapersFeed:(NSData *)data {
 	NSMutableIndexSet *indices = [NSMutableIndexSet indexSet];
-	NSUInteger lastIndex = [_wallpapers count];
+	NSUInteger lastIndex = _wallpapers.count;
 	
 	NSError *error = nil;
 	NSArray *wallpapers = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
@@ -223,12 +211,12 @@ static NSString *ParamStringWithDictionary(NSDictionary *dictionary) {
 	}
 	
 	for (NSDictionary *item in wallpapers){
-		NSURL *previewUrl = [NSURL URLWithString:[item objectForKey:@"preview_url"]];
+		NSURL *previewUrl = [NSURL URLWithString:item[@"preview_url"]];
 		
 		Wallpaper *wallpaper = [[Wallpaper alloc] init];
-		wallpaper.identifier = [[item objectForKey:@"id"] stringValue];
+		wallpaper.identifier = [item[@"id"] stringValue];
 		wallpaper.previewURL = previewUrl;
-		wallpaper.title = [item objectForKey:@"title"];
+		wallpaper.title = item[@"title"];
 		
 		[_wallpapers addObject:wallpaper];
 		
@@ -260,11 +248,11 @@ static NSString *ParamStringWithDictionary(NSDictionary *dictionary) {
 		[indices addIndex:lastIndex++];
 	}
 	
-	if ([_wallpapers count]) {
-		Wallpaper *newestWallpaper = [_wallpapers objectAtIndex:0];
+	if (_wallpapers.count > 0) {
+		Wallpaper *newestWallpaper = _wallpapers.firstObject;
 		
 		if (newestWallpaper) {
-			[[NSUserDefaults standardUserDefaults] setObject:newestWallpaper.identifier forKey:@"MRIL.LatestID"];
+			[[NSUserDefaults standardUserDefaults] setObject:newestWallpaper.identifier forKey:kLatestIDKey];
 			[[NSUserDefaults standardUserDefaults] synchronize];
 		}
 	}
