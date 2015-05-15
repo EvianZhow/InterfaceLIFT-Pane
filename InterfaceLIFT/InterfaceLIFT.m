@@ -9,11 +9,19 @@
 
 #import "Wallpaper.h"
 
-#define USER_AGENT @"Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_8) AppleWebKit/533.21.1 (KHTML, like Gecko) Version/5.0.5 Safari/533.21.1"
-#define HASH @"b3JvYXR6YjExcWhieTh4ZWxkcm00aGh3eTluaXBsOjIzMTcyMTExNTU4ZmViNDQ0NTFjZjRhYTMzN2ZiOTQwMDBkY2I3MWQ="
-#define HEADER @"X-Mashape-Authorization"
-
 static NSString *const kAPIKey = @"jcAdhn6vlvxiqecaNMo79UsESPicPFFcgNLmmKMJL1GXNkVcLS";
+static NSString *const kURLBase = @"https://api.ifl.cc/v1";
+static NSString *const kLimit = @"21";
+
+static NSString *ParamStringWithDictionary(NSDictionary *dictionary) {
+	NSMutableString *paramString = [NSMutableString stringWithString:@"?"];
+	
+	[dictionary enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+		[paramString appendFormat:@"%@=%@%@", key, obj, @"&"];
+	}];
+	
+	return [paramString copy];
+}
 
 @implementation InterfaceLIFT {
 	NSString *_latestID;
@@ -28,7 +36,7 @@ static NSString *const kAPIKey = @"jcAdhn6vlvxiqecaNMo79UsESPicPFFcgNLmmKMJL1GXN
 
 @synthesize galleryView = _galleryView;
 
-- (id)initWithBundle:(NSBundle *)bundle {
+- (instancetype)initWithBundle:(NSBundle *)bundle {
 	self = [super initWithBundle:bundle];
 	if (self) {
 		_wallpapers = [NSMutableArray new];
@@ -78,18 +86,17 @@ static NSString *const kAPIKey = @"jcAdhn6vlvxiqecaNMo79UsESPicPFFcgNLmmKMJL1GXN
 
 - (void)loadWallpaper:(Wallpaper *)wallpaper {
 	// Setup the url and key
-	NSString *urlbase = @"https://interfacelift-interfacelift-wallpapers.p.mashape.com/v1/wallpaper_download/%@/%@/";
-	
 	// Build resolution string and set resolution param
 	NSRect screenRect = [[NSScreen mainScreen] frame];
 	NSString *resString = [NSString stringWithFormat:@"%dx%d", (int) screenRect.size.width, (int) screenRect.size.height];
-	NSString *totalUrl = [NSString stringWithFormat:urlbase, wallpaper.identifier, resString];
+	NSDictionary *params = @{ @"id": wallpaper.identifier, @"resolution": resString };
+	NSString *paramString = ParamStringWithDictionary(params);
+	NSString *totalUrl = [NSString stringWithFormat:@"%@/wallpaper_download%@", kURLBase, paramString];
 	
 	// build the URL object and make the request
 	NSMutableURLRequest *r = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:totalUrl]];
-	[r setValue:HASH forHTTPHeaderField:HEADER];
+	[r setValue:kAPIKey forHTTPHeaderField:@"X-IFL-API-Key"];
 	[r setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
-	[r setValue:USER_AGENT forHTTPHeaderField:@"User-Agent"];
 	
 	[NSURLConnection sendAsynchronousRequest:r queue:[NSOperationQueue mainQueue]
 						   completionHandler:^(NSURLResponse *response, NSData *data, NSError *error) {
@@ -116,9 +123,8 @@ static NSString *const kAPIKey = @"jcAdhn6vlvxiqecaNMo79UsESPicPFFcgNLmmKMJL1GXN
 	NSURL *url = [NSURL URLWithString:[wallpaperDownload objectForKey:@"download_url"]];
 	
 	NSMutableURLRequest *r = [NSMutableURLRequest requestWithURL:url];
-	[r setValue:HASH forHTTPHeaderField:HEADER];
+	[r setValue:kAPIKey forHTTPHeaderField:@"X-IFL-API-Key"];
 	[r setValue:@"image/jpeg" forHTTPHeaderField:@"Content-Type"];
-	[r setValue:USER_AGENT forHTTPHeaderField:@"User-Agent"];
 	
 	[NSURLConnection sendAsynchronousRequest:r queue:[NSOperationQueue mainQueue]
 						   completionHandler:^(NSURLResponse *response, NSData *data, NSError *error) {
@@ -173,32 +179,19 @@ static NSString *const kAPIKey = @"jcAdhn6vlvxiqecaNMo79UsESPicPFFcgNLmmKMJL1GXN
 }
 
 - (void)loadNextPageOfWallpapers {
-	// Setup the url and key
-	
-	NSString *urlBase = @"https://api.ifl.cc/v1/wallpapers/";
-	
-	// Parameters to use to make the API request
 	NSMutableDictionary *params = [NSMutableDictionary dictionary];
-	[params setObject:@"20" forKey:@"limit"];
-	[params setObject:[NSString stringWithFormat:@"%ld", _currentOffset] forKey:@"start"];
+	params[@"limit"] = kLimit;
+	params[@"start"] = [NSString stringWithFormat:@"%ld", _currentOffset];
 	params[@"sort_by"] = @"date";
 	params[@"sort_order"] = @"desc";
 	params[@"tag_id"] = @"614";
 	
-	// Build resolution string and set resolution param
-	NSRect screenRect = [[NSScreen mainScreen] frame];
-	NSString *resString = [NSString stringWithFormat:@"%dx%d", (int) screenRect.size.width, (int) screenRect.size.height];
-	[params setObject:resString forKey:@"resolution"];
+	NSRect screenRect = [NSScreen mainScreen].frame;
+	NSString *resString = [NSString stringWithFormat:@"%dx%d", (int)screenRect.size.width, (int)screenRect.size.height];
+	params[@"resolution"] = resString;
 	
-	// build the url using the values in the dictionary (probably slow)
-	NSMutableString *paramString = [NSMutableString stringWithString:@"?"];
-	
-	for (NSString *key in params) {
-		[paramString appendString:[NSMutableString stringWithFormat:@"%@=%@%@", key, [params objectForKey:key], @"&"]];
-	}
-	
-	// build the URL object and make the request
-	NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@", urlBase, paramString]];
+	NSString *paramString = ParamStringWithDictionary(params);
+	NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@/wallpapers/%@", kURLBase, paramString]];
 	
 	NSMutableURLRequest *r = [NSMutableURLRequest requestWithURL:url];
 	[r setValue:kAPIKey forHTTPHeaderField:@"X-IFL-API-Key"];
@@ -243,10 +236,8 @@ static NSString *const kAPIKey = @"jcAdhn6vlvxiqecaNMo79UsESPicPFFcgNLmmKMJL1GXN
 		
 		[_thumbQueue addOperationWithBlock:^{
 			NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:wallpaper.previewURL];
-			[request setValue:USER_AGENT forHTTPHeaderField:@"User-Agent"];
 			
 			NSError *error = nil;
-			
 			NSData *imageData = [NSURLConnection sendSynchronousRequest:request
 													  returningResponse:nil
 																  error:&error];
