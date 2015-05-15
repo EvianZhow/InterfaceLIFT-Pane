@@ -91,7 +91,7 @@ static NSString *const kAPIKey = @"jcAdhn6vlvxiqecaNMo79UsESPicPFFcgNLmmKMJL1GXN
 	[r setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
 	[r setValue:USER_AGENT forHTTPHeaderField:@"User-Agent"];
 	
-	[NSURLConnection sendAsynchronousRequest:r queue:_wallpaperQueue
+	[NSURLConnection sendAsynchronousRequest:r queue:[NSOperationQueue mainQueue]
 						   completionHandler:^(NSURLResponse *response, NSData *data, NSError *error) {
 							   
 							   if (!data) {
@@ -99,9 +99,7 @@ static NSString *const kAPIKey = @"jcAdhn6vlvxiqecaNMo79UsESPicPFFcgNLmmKMJL1GXN
 								   return;
 							   }
 							   
-							   [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-								   [self parseWallpaperDownload:data wallpaper:wallpaper];
-							   }];
+							   [self parseWallpaperDownload:data wallpaper:wallpaper];
 							   
 						   }];
 }
