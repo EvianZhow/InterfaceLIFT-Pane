@@ -204,7 +204,7 @@ static NSString *const kAPIKey = @"jcAdhn6vlvxiqecaNMo79UsESPicPFFcgNLmmKMJL1GXN
 	[r setValue:kAPIKey forHTTPHeaderField:@"X-IFL-API-Key"];
 	[r setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
 	
-	[NSURLConnection sendAsynchronousRequest:r queue:_workQueue
+	[NSURLConnection sendAsynchronousRequest:r queue:[NSOperationQueue mainQueue]
 						   completionHandler:^(NSURLResponse *response, NSData *data, NSError *error) {
 							   
 							   if (!data) {
@@ -212,9 +212,7 @@ static NSString *const kAPIKey = @"jcAdhn6vlvxiqecaNMo79UsESPicPFFcgNLmmKMJL1GXN
 								   return;
 							   }
 							   
-							   [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-								   [self parseWallpapersFeed:data];
-							   }];
+							   [self parseWallpapersFeed:data];
 							   
 						   }];
 	
