@@ -91,7 +91,7 @@ static NSString *ParamStringWithDictionary(NSDictionary *dictionary) {
 	NSString *resString = [NSString stringWithFormat:@"%dx%d", (int) screenRect.size.width, (int) screenRect.size.height];
 	NSDictionary *params = @{ @"id": wallpaper.identifier, @"resolution": resString };
 	NSString *paramString = ParamStringWithDictionary(params);
-	NSString *totalUrl = [NSString stringWithFormat:@"%@/wallpaper_download%@", kURLBase, paramString];
+	NSString *totalUrl = [NSString stringWithFormat:@"%@/wallpaper_download/%@", kURLBase, paramString];
 	
 	// build the URL object and make the request
 	NSMutableURLRequest *r = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:totalUrl]];
