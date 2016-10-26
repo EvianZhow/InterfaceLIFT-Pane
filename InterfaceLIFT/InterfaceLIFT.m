@@ -75,24 +75,43 @@ static NSString *ParamStringWithDictionary(NSDictionary *dictionary) {
 
 - (void)loadWallpaper:(Wallpaper *)wallpaper {
 	NSRect screenRect = [NSScreen mainScreen].frame;
-	NSString *resString = [NSString stringWithFormat:@"%dx%d", (int)screenRect.size.width, (int)screenRect.size.height];
+    NSRect backingScreenRect = [[NSScreen mainScreen] convertRectToBacking:screenRect];
+    
+    // Fix for built-in retina display screen
+	NSString *resString = [NSString stringWithFormat:@"%dx%d", (int)backingScreenRect.size.width, (int)backingScreenRect.size.height];
+    NSString *fallbackResString = [NSString stringWithFormat:@"%dx%d", (int)screenRect.size.width, (int)screenRect.size.height];
+    
 	NSString *totalUrl = [NSString stringWithFormat:@"%@/wallpaper_download/%@/%@/", kURLBase, wallpaper.identifier, resString];
+    NSString *fallbackUrl = [NSString stringWithFormat:@"%@/wallpaper_download/%@/%@/", kURLBase, wallpaper.identifier, fallbackResString];
 	
 	NSMutableURLRequest *r = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:totalUrl]];
 	[r setValue:kAPIKey forHTTPHeaderField:@"X-IFL-API-Key"];
 	[r setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
+    
+    NSMutableURLRequest *fr = [r mutableCopy];
+    [fr setURL:[NSURL URLWithString:fallbackUrl]];
 	
-	[NSURLConnection sendAsynchronousRequest:r queue:[NSOperationQueue mainQueue]
-						   completionHandler:^(NSURLResponse *response, NSData *data, NSError *error) {
-							   
-							   if (!data) {
-								   NSLog(@"Could not fetch wallpaper! Error: %@", error);
-								   return;
-							   }
-							   
-							   [self parseWallpaperDownload:data wallpaper:wallpaper];
-							   
-						   }];
+    [NSURLConnection sendAsynchronousRequest:r queue:[NSOperationQueue mainQueue]
+                           completionHandler:^(NSURLResponse *response, NSData *data, NSError *error) {
+                               
+                               if (!data) {
+                                   NSLog(@"Could not fetch wallpaper! Error: %@", error);
+                                   [NSURLConnection sendAsynchronousRequest:fr queue:[NSOperationQueue mainQueue]
+                                                          completionHandler:^(NSURLResponse *response, NSData *data, NSError *error) {
+                                                              
+                                                              if (!data) {
+                                                                  NSLog(@"Could not fetch wallpaper! Error: %@", error);
+                                                                  return;
+                                                              }
+                                                              
+                                                              [self parseWallpaperDownload:data wallpaper:wallpaper];
+                                                          }];
+                                   return;
+                               }
+                               
+                               [self parseWallpaperDownload:data wallpaper:wallpaper];
+                               
+                           }];
 }
 
 - (void)parseWallpaperDownload:(NSData *)data wallpaper:(Wallpaper *)wallpaper {

@@ -62,7 +62,7 @@
 }
 
 - (ImageCell *)imageCellAtIndex:(NSUInteger)index {
-	return [_cells objectAtIndex:index];
+	return _cells[index];
 }
 
 - (void)reloadImageCellAtIndex:(NSUInteger)index {
